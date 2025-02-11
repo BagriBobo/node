@@ -62,3 +62,28 @@ O arquivo `serverPromise2.js` cria um servidor HTTP usando o módulo nativo `htt
 
 ## Observações
 Cada arquivo de servidor é construído sobre os conceitos do anterior, mostrando diferentes aspectos do desenvolvimento de servidores Node.js. Os exemplos progridem de implementações básicas para mais complexas.
+
+
+# Exercício: Sistema de Gerenciamento de Usuários com API Externa
+
+Crie um servidor HTTP que gerencie usuários obtidos da API RandomUser.me (https://randomuser.me/api/) em um array de objetos, com as seguintes especificações:
+
+## Requisitos
+
+### 1. Rota de Adição de Usuário
+- **URL**: `/addUser`
+- **Método**: GET
+- **Comportamento**: Busca um usuário aleatório da API e armazena em memória
+- **Resposta**: Mensagem que o usuário foi adicionado
+
+### 2. Rota de Listagem
+- **URL**: `/users`
+- **Método**: GET
+- **Comportamento**: Lista todos os usuários armazenados
+- **Resposta**: Array JSON com todos os usuários
+
+### 3. Rota de Usuário Específico
+- **URL**: `/user/:id`
+- **Método**: GET
+- **Comportamento**: Retorna os dados de um usuário específico
+- **Resposta**: JSON com dados do usuário ou mensagem de erro se ele não existir
