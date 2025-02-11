@@ -1,78 +1,64 @@
-# Hello, BCC!!
+# Projeto de Aprendizado de Servidor Node.js
 
-## Links dos vídeos de Node.Js
-[Ryan Dahl: Introduction to Node.js](https://www.youtube.com/watch?v=M-sc73Y-zQA)
+Este projeto demonstra os fundamentos da criação de um servidor usando Node.js. Ele explora diferentes abordagens e conceitos no desenvolvimento do lado do servidor.
 
-[Ryan Dahl: Node JS - JSConf](https://www.youtube.com/watch?v=EeYvFl7li9E)
-
-## Console.log
-> 01rand.js
-
-## Servidor HTTP básico
-> 02server.js
-
-## NPM
-```
-npm init
-npm instalar lodash
-```
->03npm.js
+## Estrutura do Projeto
 
 ```
-npm install -D eslint
-npm init @eslint/config@latest
+/node
+├── 01 - Exercício         # Resolção do execício da aula anterior
+├── 02 - serverslow        # Implementação básica de servidor HTTP
+├── 03 - serverdelay.js    # Servidor com delay na resposta
+├── 04 - serverPromise.js  # Tratando os erros da promisse
+└── 04 - serverPromise2.js # Tratando os erros da promisse
 ```
 
-## CommonJS e ES Modules
-O CommonJS é o sistema de módulos tradicional do Node.js. Nele, os módulos são importados com a função require() e exportados usando module.exports ou exports. Essa abordagem permite carregar módulos de forma síncrona, o que é adequado para ambientes de servidor onde os arquivos já estão disponíveis localmente.
+## Descrição dos Arquivos
 
-Os ES Modules são a especificação oficial para módulos JavaScript definida pela ECMAScript. Utilizam as palavras-chave import e export para gerenciar dependências de forma declarativa. Essa estrutura permite a análise estática do código, facilitando a otimização e o carregamento assíncrono.
+### 01 - Exercício
+O arquivo `index.js` cria um servidor HTTP usando módulos nativos do Node.js (`http`, `url`, `fs/promises`, `fs`). Ele atende a quatro rotas específicas:
 
-```npm pkg set type=module```
+1. **/teste**: Responde com "Teste deu ok".
+2. **/nome?usuario=nome**: Responde com "Olá {usuario}", substituindo `{usuario}` pelo valor do parâmetro de query `usuario`.
+3. **/arquivosync**: Lê e responde com o conteúdo do arquivo `01_arquivo.txt` de forma síncrona.
+4. **/arquivoasync**: Lê e responde com o conteúdo do arquivo `01_arquivo.txt` de forma assíncrona.
 
-> 04server.js
+Para outras rotas, responde com "Rota não encontrada".
 
-> 04index.js
+### 02 - serverslow.js
+O arquivo `serverslow.js` cria um servidor HTTP usando o módulo nativo `http` do Node.js. Ele atende a duas rotas específicas:
 
-## Blocking Model e Non-Blocking Model
+1. **/slow**: Executa uma operação lenta (um loop que bloqueia o evento de loop) e responde com "Resposta lenta...".
+2. **Qualquer outra rota**: Responde com "Resposta normal...".
 
-> 05lentidao.js
+### 03 - serverdelay.js
+O arquivo `serverdelay.js` cria um servidor HTTP usando o módulo nativo `http` do Node.js. Ele atende a duas rotas específicas:
 
-> 05timeout.js
+1. **/slow**: Executa uma operação lenta simulada por uma `Promise` que resolve após 12 segundos e responde com "Resposta lenta...".
+2. **Qualquer outra rota**: Responde com "Resposta normal...".
 
-### Callback
-> 06lentidao.js
+### 04 - serverPromise.js
+O arquivo `serverPromise.js` cria um servidor HTTP usando o módulo nativo `http` do Node.js. Ele atende a duas rotas específicas:
 
-### ReadFiles
-> 07arquivo.js
+1. **/slow**: Executa uma operação lenta simulada por uma `Promise` que resolve após 12 segundos. Se ocorrer um erro, a `Promise` é rejeitada com a mensagem "Erro na operação lenta". Caso contrário, responde com "Resposta lenta...".
+2. **Qualquer outra rota**: Responde com "Resposta normal...".
 
-> 07arquivo1.js
+### 04 - serverPromise2.js
+O arquivo `serverPromise2.js` cria um servidor HTTP usando o módulo nativo `http` do Node.js. Ele atende a duas rotas específicas:
 
-### Promisses
-> 07promises.js
-
-> 08arquivo.js
-
-# Exercício
-Desenvolver um servidor HTTP usando apenas os módulos nativos do Node.js (como http, url e fs) que atenda a quatro rotas específicas:
-
-## Rota teste
-- **URL**: /teste
-- **Comportamento**: Quando acessada, a rota deve responder com o texto "Teste deu ok".
-
-## Rota de Saudação
-- **URL**: /nome?usuario=nome
-- **Comportamento**: Ao acessar essa rota, o servidor deve ler o parâmetro de query usuario e responder com a mensagem "Olá {usuario}", substituindo {usuario} pelo valor informado.
-Exemplo: Se o usuário acessar /nome?usuario=Maria, a resposta deve ser "Olá Maria".
-
-## Rota de Leitura Síncrona de Arquivo
-- **URL**: /arquivosync
-- **Comportamento**: Nesta rota, o servidor deve ler o conteúdo de um arquivo (por exemplo, arquivo.txt) de forma síncrona, utilizando o método fs.readFileSync, e enviar o conteúdo do arquivo como resposta.
-
-## Rota de Leitura Assíncrona de Arquivo
-- **URL**: /arquivoasync
-- **Comportamento**: Semelhante à rota anterior, mas aqui o servidor deverá ler o arquivo utilizando o método assíncrono fs.readFile e retornar o conteúdo do arquivo na resposta.
+1. **/slow**: Executa uma operação lenta simulada por uma `Promise` que resolve após 12 segundos. Se ocorrer um erro, a `Promise` é rejeitada com a mensagem "Erro na operação lenta". Caso contrário, responde com "Resposta lenta...".
+2. **Qualquer outra rota**: Responde com "Resposta normal...".
 
 
+## Como Executar
 
+1. Certifique-se de ter o Node.js instalado
+2. Navegue até o diretório do projeto
+3. Execute qualquer arquivo do servidor usando:
+   ```
+   node --watch arquivo.js
+   ```
+4. Abra seu navegador e acesse `http://localhost:3000`
 
+## Observações
+Cada arquivo de servidor é construído sobre os conceitos do anterior, mostrando diferentes aspectos do desenvolvimento de servidores Node.js. Os exemplos progridem de implementações básicas para mais complexas.

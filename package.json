@@ -1,18 +1,21 @@
 {
-  "name": "aula_node",
+  "name": "node-server",
   "version": "1.0.0",
-  "description": "codigos da aula de node",
-  "main": "server.js",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {
-    "lodash": "^4.17.21"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thyagoquintas/node.git"
   },
-  "devDependencies": {
-    "@eslint/js": "^9.19.0",
-    "eslint": "^9.19.0",
-    "globals": "^15.14.0"
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/thyagoquintas/node/issues"
   },
-  "type": "module"
+  "homepage": "https://github.com/thyagoquintas/node#readme"
 }
