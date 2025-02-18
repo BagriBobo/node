@@ -77,14 +77,12 @@ A cada 5 segundos, o sistema realizará um ciclo de processamento onde:
 A seguir, um exemplo de como definir a estrutura de uma tarefa e a lista inicial de tarefas:
 
 ```javascript
-// Estrutura de uma tarefa
 const exemplo = {
   id: 1,
   descricao: "Exemplo de tarefa",
   status: "aguardando"  // ou "trabalhando" ou "finalizada"
 }
 
-// Lista inicial sugerida
 const tasks = [
   { id: 1, descricao: 'Tarefa 1', status: 'trabalhando' },
   { id: 2, descricao: 'Tarefa 2', status: 'aguardando' },
@@ -110,13 +108,13 @@ const tasks = [
 
    ```javascript
    const tasks = [
-   { id: 1, status: 'pendente' },
-   { id: 2, status: 'pendente' }
-   { id: 3, status: 'ativo' }
+     { id: 1, status: 'pendente' },
+     { id: 2, status: 'pendente' }
+     { id: 3, status: 'ativo' }
    ];
 
    const index = tasks.findIndex(t => t.status === 'ativo');
-   console.log(index); // 2
+   console.log(index); //2
    ```
   
 - **Sorteio e Atualização do Status:**  
@@ -130,7 +128,7 @@ const tasks = [
   ```javascript
    const numeros = [1, 2, 3, 4, 5, 6];
    const numerosPares = numeros.filter(numero => numero % 2 === 0);
-   console.log(numerosPares); // Saída: [2, 4, 6]
+   console.log(numerosPares); //Saída: [2, 4, 6]
   ```
 
   ou por exemplo
@@ -160,7 +158,7 @@ const tasks = [
   Trabalhando: Tarefa 1 está em andamento (número sorteado: 0.45)
   Aguardando: Tarefas 2, 3
 
-  // 5 segundos depois...
+  //5 segundos depois...
   Finalizado: Tarefa 1 concluída (número sorteado: 0.85)
   Trabalhando: Tarefa 2 iniciada
   Aguardando: Tarefa 3
