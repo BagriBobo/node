@@ -1,6 +1,5 @@
-# Projeto Node.js - Fundamentos e Exemplos
-
-Este projeto contém diversos exemplos para demonstrar o desenvolvimento de servidores e manipulação de eventos em Node.js. Cada exemplo aborda um conceito distinto, permitindo que entenda diferentes abordagens de criação de servidores e gerenciamento de eventos.
+# Node.js - Fundamentos e Exemplos
+Este projeto contém diversos exemplos para demonstrar o desenvolvimento de servidores e manipulação de eventos. Cada exemplo aborda um conceito distinto, permitindo que entenda diferentes abordagens de criação de servidores e gerenciamento de eventos.
 
 ## Estrutura do Projeto
 
