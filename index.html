@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Tarefas</title>
+</head>
+<body>
+    <h1>Minhas Tarefas</h1>
+    <div id="tasks"></div>
+
+    <script>
+        async function loadTasks() {
+            const response = await fetch('http://localhost:3000/tasks');
+            const tasks = await response.json();
+            
+            const tasksDiv = document.getElementById('tasks');
+            tasksDiv.innerHTML = tasks
+                .map(task => `
+                    <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                        <h3>${task.descricao}</h3>
+                        <p>Status: ${task.status}</p>
+                    </div>
+                `)
+                .join('');
+        }
+
+        loadTasks();
+    </script>
+</body>
+</html>
