@@ -50,19 +50,18 @@ const server = http.createServer((req, res) => {
         const parts = req.url.split('/');
         const id = parseInt(parts[2]);
 
+        const task = tasks.find(t => t.id === id);
+        if (!task) {
+            res.statusCode = 404;
+            return res.end(JSON.stringify({ error: 'Tarefa não encontrada' }));
+        }
+
         if (parts[3] === 'status') {
             let body = '';
             req.on('data', chunk => body += chunk);
             req.on('end', () => {
                 try {
                     const { status } = JSON.parse(body);
-                    const task = tasks.find(t => t.id === id);
-
-                    if (!task) {
-                        res.statusCode = 404;
-                        return res.end(JSON.stringify({ error: 'Tarefa não encontrada' }));
-                    }
-
                     task.status = status;
                     res.end(JSON.stringify(task));
                 } catch (error) {
@@ -70,6 +69,11 @@ const server = http.createServer((req, res) => {
                     res.end(JSON.stringify({ error: 'Dados inválidos' }));
                 }
             });
+            return;
+
+        } else if (parts[3] === 'finish') {
+            task.status = 'finalizado';
+            res.end(JSON.stringify(task));
             return;
         }
     }

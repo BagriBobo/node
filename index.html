@@ -24,13 +24,16 @@
             tasksDiv.innerHTML = tasks
                 .map(task => `
                     <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
-                    <h3>${task.descricao}</h3>
-                    <p>Status: 
-                        <select onchange="updateStatus(${task.id}, this.value)" ${task.status === 'finalizado' ? 'disabled' : ''}>
-                            <option value="aguardando" ${task.status === 'aguardando' ? 'selected' : ''}>Aguardando</option>
-                            <option value="trabalhando" ${task.status === 'trabalhando' ? 'selected' : ''}>Trabalhando</option>
-                        </select>
-                    </p>
+                        <h3>${task.descricao}</h3>
+                        <p>Status: 
+                            <select onchange="updateStatus(${task.id}, this.value)" ${task.status === 'finalizado' ? 'disabled' : ''}>
+                                <option value="aguardando" ${task.status === 'aguardando' ? 'selected' : ''}>Aguardando</option>
+                                <option value="trabalhando" ${task.status === 'trabalhando' ? 'selected' : ''}>Trabalhando</option>
+                            </select>
+                        </p>
+                        <button onclick="finishTask(${task.id})" ${task.status === 'finalizado' ? 'disabled' : ''} style="margin-top: 5px;">
+                            Finalizar Tarefa
+                        </button>
                     </div>
                 `)
                 .join('');
@@ -71,6 +74,19 @@
                 loadTasks();
             } catch (error) {
                 alert('Erro ao atualizar status');
+            }
+        }
+    </script>
+
+    <script>
+        async function finishTask(id) {
+            try {
+                await fetch(`http://localhost:3000/tasks/${id}/finish`, {
+                    method: 'PATCH'
+                });
+                loadTasks();
+            } catch (error) {
+                alert('Erro ao finalizar tarefa');
             }
         }
     </script>
