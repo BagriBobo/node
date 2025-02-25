@@ -6,6 +6,11 @@
 </head>
 <body>
     <h1>Minhas Tarefas</h1>
+    <div style="margin-bottom: 30px;">
+        <h2>Nova Tarefa</h2>
+        <input type="text" id="newTaskInput" placeholder="Digite a descrição">
+        <button onclick="createTask()">Adicionar Tarefa</button>
+    </div>
     <div id="tasks"></div>
 
     <script>
@@ -25,6 +30,26 @@
         }
 
         loadTasks();
+    </script>
+
+    <script>
+        async function createTask() {
+            const input = document.getElementById('newTaskInput');
+            const description = input.value.trim();
+            
+            if (!description) return;
+            
+            await fetch('http://localhost:3000/tasks', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ descricao: description })
+            });
+            
+            input.value = '';
+            loadTasks();
+        }
     </script>
 </body>
 </html>
