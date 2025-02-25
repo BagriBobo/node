@@ -8,7 +8,7 @@ let tasks = [
 const server = http.createServer((req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
@@ -46,7 +46,33 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    if (req.method === 'PATCH' && req.url.startsWith('/tasks/')) {
+        const parts = req.url.split('/');
+        const id = parseInt(parts[2]);
 
+        if (parts[3] === 'status') {
+            let body = '';
+            req.on('data', chunk => body += chunk);
+            req.on('end', () => {
+                try {
+                    const { status } = JSON.parse(body);
+                    const task = tasks.find(t => t.id === id);
+
+                    if (!task) {
+                        res.statusCode = 404;
+                        return res.end(JSON.stringify({ error: 'Tarefa não encontrada' }));
+                    }
+
+                    task.status = status;
+                    res.end(JSON.stringify(task));
+                } catch (error) {
+                    res.statusCode = 400;
+                    res.end(JSON.stringify({ error: 'Dados inválidos' }));
+                }
+            });
+            return;
+        }
+    }
 
     res.statusCode = 404;
     res.end(JSON.stringify({ error: 'Rota não encontrada' }));
