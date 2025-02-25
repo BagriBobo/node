@@ -1,9 +1,40 @@
 import http from 'http';
+import { EventEmitter } from 'events';
+
+const taskEmitter = new EventEmitter();
 
 let tasks = [
     { id: 1, descricao: 'Tarefa 1', status: 'aguardando' },
     { id: 2, descricao: 'Tarefa 2', status: 'aguardando' }
 ];
+
+taskEmitter.on('criacao', (task) => {
+    console.log(`Nova tarefa criada:
+    ID: ${task.id}
+    Descrição: ${task.descricao}
+    Status: ${task.status}
+    Data: ${new Date().toLocaleString()}`);
+  });
+  
+  taskEmitter.on('finalizacao', (task) => {
+    console.log(`Tarefa finalizada:
+    ID: ${task.id}
+    Descrição: ${task.descricao}
+    Status Final: ${task.status}
+    Data: ${new Date().toLocaleString()}`);
+  });
+  
+  taskEmitter.on('consultado', (tasks) => {
+    console.log(`Consulta realizada:
+    Total de tarefas: ${tasks.length}
+    Data: ${new Date().toLocaleString()}`);
+  });
+  
+  taskEmitter.on('status-alterado', (task) => {
+    console.log(`Status alterado na tarefa ${task.id}:
+    Para: ${task.status}
+    Horário: ${new Date().toLocaleTimeString()}`);
+  });
 
 const server = http.createServer((req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,6 +49,9 @@ const server = http.createServer((req, res) => {
     }
 
     if (req.method === 'GET' && req.url === '/tasks') {
+
+        taskEmitter.emit('consultado', tasks);
+
         res.end(JSON.stringify(tasks));
         return;
     }
@@ -35,6 +69,8 @@ const server = http.createServer((req, res) => {
                     status: 'aguardando'
                 };
                 tasks.push(newTask);
+
+                taskEmitter.emit('criacao', newTask);
 
                 res.statusCode = 201;
                 res.end(JSON.stringify(newTask));
@@ -63,6 +99,9 @@ const server = http.createServer((req, res) => {
                 try {
                     const { status } = JSON.parse(body);
                     task.status = status;
+                    
+                    taskEmitter.emit('status-alterado', task);
+
                     res.end(JSON.stringify(task));
                 } catch (error) {
                     res.statusCode = 400;
@@ -73,6 +112,9 @@ const server = http.createServer((req, res) => {
 
         } else if (parts[3] === 'finish') {
             task.status = 'finalizado';
+
+            taskEmitter.emit('finalizacao', task);
+
             res.end(JSON.stringify(task));
             return;
         }
