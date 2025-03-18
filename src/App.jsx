@@ -1,9 +1,12 @@
+import MovieList from "./components/MovieList";
 
-function App() {
+const App = () => {
   return (
-    <>
-      <h1>Hello World</h1>
-    </>)
-}
+    <div>
+      <h1>Catálogo de Filmes</h1>
+      <MovieList />
+    </div>
+  );
+};
 
-export default App
+export default App;
