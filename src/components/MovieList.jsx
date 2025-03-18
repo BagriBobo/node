@@ -5,6 +5,8 @@ const MovieList = () => {
   const [movies, setMovies] = useState([]);
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState("desc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const moviesPerPage = 4;
 
   useEffect(() => {
     fetch("/videos.json")
@@ -20,6 +22,10 @@ const MovieList = () => {
   const sortedMovies = [...filteredMovies].sort((a, b) => {
     return sortOrder === "asc" ? a.rating - b.rating : b.rating - a.rating;
   });
+
+  const totalPages = Math.ceil(sortedMovies.length / moviesPerPage);
+  const startIndex = (currentPage - 1) * moviesPerPage;
+  const selectedMovies = sortedMovies.slice(startIndex, startIndex + moviesPerPage);
 
   return (
     <>
@@ -37,8 +43,8 @@ const MovieList = () => {
       </div>
 
       <div className="movie-list">
-        {sortedMovies.length > 0 ? (
-          sortedMovies.map((movie) => (
+        {selectedMovies.length > 0 ? (
+          selectedMovies.map((movie) => (
             <MovieCard
               key={movie.id}
               title={movie.title}
@@ -50,6 +56,26 @@ const MovieList = () => {
         ) : (
           <p>Nenhum filme encontrado</p>
         )}
+      </div>
+
+      <div className="pagination">
+        <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
+          Anterior
+        </button>
+
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i + 1}
+            className={currentPage === i + 1 ? "active" : ""}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {i + 1}
+          </button>
+        ))}
+
+        <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
+          Próximo
+        </button>
       </div>
     </>
   );
