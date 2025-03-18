@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import MovieCard from "./MovieCard";
+import Filter from "./Filter";
+import Pagination from "./Pagination";
 
 const MovieList = () => {
   const [movies, setMovies] = useState([]);
@@ -29,18 +31,7 @@ const MovieList = () => {
 
   return (
     <>
-      <div className="filters">
-        <input
-          type="text"
-          placeholder="Buscar filme..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select onChange={(e) => setSortOrder(e.target.value)} value={sortOrder}>
-          <option value="desc">Ordenar por nota (Maior primeiro)</option>
-          <option value="asc">Ordenar por nota (Menor primeiro)</option>
-        </select>
-      </div>
+      <Filter search={search} setSearch={setSearch} sortOrder={sortOrder} setSortOrder={setSortOrder} />
 
       <div className="movie-list">
         {selectedMovies.length > 0 ? (
@@ -58,25 +49,7 @@ const MovieList = () => {
         )}
       </div>
 
-      <div className="pagination">
-        <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
-          Anterior
-        </button>
-
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i + 1}
-            className={currentPage === i + 1 ? "active" : ""}
-            onClick={() => setCurrentPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
-
-        <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
-          Próximo
-        </button>
-      </div>
+      <Pagination totalPages={totalPages} currentPage={currentPage} setCurrentPage={setCurrentPage} />
     </>
   );
 };
