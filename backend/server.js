@@ -6,24 +6,32 @@ import cors from 'cors';
 import DatabaseManager from './managers/DatabaseManager.js';
 import SocketManager from './managers/SocketManager.js';
 
-
-/*
-* Inicializar servidor Express
-* O servidor Express é responsável por gerenciar as requisições HTTP.
-*/
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", //Permite acesso de qualquer origem
-    methods: ["GET", "POST"]
+    origin: ["http://localhost:5174", "http://127.0.0.1:5174"],
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
 app.use(cors({
-  origin: '*' //Permite acesso de qualquer origem
+  origin: ["http://localhost:5174", "http://127.0.0.1:5174"],
+  credentials: true
 }));
 app.use(express.json());
+
+// Middleware para logs
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
+// Rota de teste
+app.get('/test', (req, res) => {
+  res.json({ message: 'Servidor do Jogo da Velha funcionando!' });
+});
 
 /*
  * Inicializar gerenciador de banco de dados e socket
@@ -47,9 +55,10 @@ databaseManager.initialize()
     console.error("Failed to initialize database:", err);
   });
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Servidor está rodando na porta ${PORT}`);
+  console.log(`Servidor do Jogo da Velha rodando em http://localhost:${PORT}`);
+  console.log('CORS configurado para:', io._opts.cors.origin);
 });
 
 export { app, server };

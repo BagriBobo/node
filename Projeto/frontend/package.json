@@ -1,0 +1,16 @@
+{
+  "name": "jogo-da-velha-frontend",
+  "version": "1.0.0",
+  "description": "Frontend para o Jogo da Velha Multiplayer",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "socket.io-client": "^4.7.2"
+  },
+  "devDependencies": {
+    "vite": "^4.5.0"
+  }
+} 

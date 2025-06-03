@@ -16,28 +16,27 @@ class SocketManager {
     this.io.on('connection', (socket) => {
       console.log('Usuário conectado:', socket.id);
 
-      //Usuário entra no lobby
-      socket.on('join_lobby', (data) => this.handleJoinLobby(socket, data));
+      // Usuário entra no torneio
+      socket.on('tournament:join', (data) => this.handleJoinTournament(socket, data));
       
-      //Líder inicia o jogo
-      socket.on('start_game', () => this.handleStartGame(socket));
+      // Iniciar torneio
+      socket.on('tournament:start', () => this.handleStartTournament(socket));
 
-      //Usuário envia resposta
-      socket.on('submit_answer', (data) => this.handleSubmitAnswer(socket, data));
+      // Jogador faz jogada
+      socket.on('game:move', (data) => this.handleGameMove(socket, data));
       
-      //Desconexão
+      // Desconexão
       socket.on('disconnect', () => this.handleDisconnect(socket));
     });
   }
 
-  //Tratamento do evento 'join_lobby'
-  async handleJoinLobby(socket, { playerName }) {
+  async handleJoinTournament(socket, { playerName }) {
     try {
       let gameId;
       let game;
       let isLeader = false;
 
-      //Procurar por um jogo existente que ainda não começou
+      // Procurar por um jogo existente que ainda não começou
       for (const [id, existingGame] of this.activeGames.entries()) {
         if (!existingGame.started) {
           gameId = id;
@@ -46,39 +45,37 @@ class SocketManager {
         }
       }
 
-      //Se nenhum jogo ativo for encontrado, criar um novo
+      // Se nenhum jogo ativo for encontrado, criar um novo
       if (!gameId) {
         gameId = await this.databaseManager.createGame();
-        //Primeiro jogador torna-se o líder
         isLeader = true;
         
         game = new Game(gameId, this.databaseManager.getDatabase());
         this.activeGames.set(gameId, game);
       }
 
-      //Adicionar jogador ao jogo
+      // Adicionar jogador ao jogo
       const player = await game.addPlayer(socket.id, playerName, isLeader);
       
-      //Mapear o ID do socket ao ID do jogo para consulta rápida
+      // Mapear o ID do socket ao ID do jogo
       this.socketToGameMap.set(socket.id, gameId);
       
-      //Entrar na sala do jogo
+      // Entrar na sala do jogo
       socket.join(`game:${gameId}`);
       
-      //Enviar lista atualizada de jogadores para todos no lobby
-      this.io.to(`game:${gameId}`).emit('lobby_update', {
+      // Enviar lista atualizada de jogadores
+      this.io.to(`game:${gameId}`).emit('tournament:players', {
         players: game.getPlayersJSON(),
         gameId
       });
       
     } catch (error) {
-      console.error('Error ao entrar no lobby:', error);
-      socket.emit('error', { message: 'Erro ao entrar no lobby' });
+      console.error('Erro ao entrar no torneio:', error);
+      socket.emit('error', { message: 'Erro ao entrar no torneio' });
     }
   }
 
-  //Tratamento do evento 'start_game'
-  async handleStartGame(socket) {
+  async handleStartTournament(socket) {
     try {
       const gameId = this.socketToGameMap.get(socket.id);
       
@@ -94,36 +91,32 @@ class SocketManager {
         return;
       }
 
-      //Verificar se o jogador é o líder
+      // Verificar se o jogador é o líder
       if (!game.isPlayerLeader(socket.id)) {
-        socket.emit('error', { message: 'Apenas o líder pode iniciar o jogo' });
+        socket.emit('error', { message: 'Apenas o líder pode iniciar o torneio' });
         return;
       }
       
-      //Buscar perguntas do banco de dados
-      const questions = await this.databaseManager.getRandomQuestions(5);
+      // Iniciar o torneio
+      game.startTournament();
       
-      //Iniciar o jogo
-      game.startGame(questions);
+      // Iniciar a contagem regressiva
+      this.io.to(`game:${gameId}`).emit('tournament:starting', { countdown: 3 });
       
-      //Iniciar a contagem regressiva
-      this.io.to(`game:${gameId}`).emit('game_starting', { countdown: 3 });
-      
-      //Após a contagem regressiva, enviar a primeira pergunta
+      // Após a contagem regressiva, iniciar a primeira partida
       setTimeout(() => {
-        const questionData = game.startQuestion();
+        const matchData = game.startMatch();
         
-        this.io.to(`game:${gameId}`).emit('question', questionData);
+        this.io.to(`game:${gameId}`).emit('game:started', matchData);
       }, 3000);
       
     } catch (error) {
-      console.error('Erro ao iniciar o jogo:', error);
-      socket.emit('error', { message: 'Erro ao iniciar o jogo' });
+      console.error('Erro ao iniciar o torneio:', error);
+      socket.emit('error', { message: 'Erro ao iniciar o torneio' });
     }
   }
 
-  //Tratamento do evento 'submit_answer'
-  async handleSubmitAnswer(socket, { answer, questionId }) {
+  async handleGameMove(socket, { position }) {
     try {
       const gameId = this.socketToGameMap.get(socket.id);
       
@@ -139,74 +132,69 @@ class SocketManager {
         return;
       }
 
-      //Registrar a resposta do jogador
-      const result = await game.submitAnswer(socket, answer, questionId);
+      // Registrar a jogada
+      const result = await game.makeMove(socket.id, position);
       
       if (result.error) {
         socket.emit('error', { message: result.error });
         return;
       }
       
-      //Enviar confirmação ao jogador
-      socket.emit('answer_received', { received: true });
+      // Enviar atualização do tabuleiro para todos
+      this.io.to(`game:${gameId}`).emit('game:updated', {
+        board: result.board,
+        currentPlayer: result.currentPlayer
+      });
       
-      //Se todos os jogadores responderam, processar resultados
-      if (result.allPlayersAnswered) {
-        //Calcular pontuações
-        const results = await game.calculateScores();
-        
-        //Enviar resultados da pergunta para todos os jogadores
-        this.io.to(`game:${gameId}`).emit('question_results', {
-          ...results,
-          nextQuestionIn: 5 //segundos
+      // Se a partida terminou
+      if (result.matchEnded) {
+        // Enviar resultado da partida
+        this.io.to(`game:${gameId}`).emit('tournament:matchEnded', {
+          winner: result.winner,
+          scores: result.scores
         });
         
-        //Passar para a próxima pergunta ou finalizar o jogo após um atraso
-        setTimeout(() => {
-          const nextQuestion = game.nextQuestion();
-          
-          if (nextQuestion) {
-            //Próxima pergunta
-            this.io.to(`game:${gameId}`).emit('question', nextQuestion);
-          } else {
-            //Jogo acabou, mostrar placar final
-            this.handleGameOver(gameId, game);
-          }
-        }, 5000);
+        // Se o torneio terminou
+        if (result.tournamentEnded) {
+          this.handleTournamentOver(gameId, game);
+        } else {
+          // Iniciar próxima partida após um delay
+          setTimeout(() => {
+            const nextMatch = game.startNextMatch();
+            this.io.to(`game:${gameId}`).emit('game:started', nextMatch);
+          }, 3000);
+        }
       }
     } catch (error) {
-      console.error('Erro ao enviar resposta:', error);
-      socket.emit('error', { message: 'Erro ao enviar resposta' });
+      console.error('Erro ao processar jogada:', error);
+      socket.emit('error', { message: 'Erro ao processar jogada' });
     }
   }
 
-  //Lidar com o fim do jogo
-  async handleGameOver(gameId, game) {
+  async handleTournamentOver(gameId, game) {
     try {
-      const finalResult = await game.finishGame();
+      const finalResult = await game.finishTournament();
       
-      this.io.to(`game:${gameId}`).emit('game_over', finalResult);
+      this.io.to(`game:${gameId}`).emit('tournament:ended', finalResult);
       
-      //Remover o jogo após algum tempo para limpar memória
+      // Remover o jogo após algum tempo
       setTimeout(() => {
         if (this.activeGames.has(gameId)) {
-          //Limpar socketToGameMap para todos os jogadores deste jogo
           game.getPlayersJSON().forEach(player => {
             this.socketToGameMap.delete(player.socketId);
           });
           
           this.activeGames.delete(gameId);
         }
-      }, 60000); //Remover após 1 minuto
+      }, 60000);
     } catch (error) {
-      console.error('Erro ao encerrar o jogo:', error);
+      console.error('Erro ao encerrar o torneio:', error);
     }
   }
 
-  //Tratamento do evento 'disconnect'
   async handleDisconnect(socket) {
     try {
-      console.log('User disconnected:', socket.id);
+      console.log('Usuário desconectado:', socket.id);
       
       const gameId = this.socketToGameMap.get(socket.id);
       
@@ -214,24 +202,24 @@ class SocketManager {
         const game = this.activeGames.get(gameId);
         
         if (game) {
-          //Remover jogador do jogo
+          // Remover jogador do jogo
           const players = await game.removePlayer(socket.id);
           
-          //Se ainda há jogadores e o jogo não começou, atualizar o lobby
+          // Se ainda há jogadores e o jogo não começou, atualizar a lista
           if (players.length > 0) {
             if (!game.started) {
-              this.io.to(`game:${gameId}`).emit('lobby_update', {
+              this.io.to(`game:${gameId}`).emit('tournament:players', {
                 players: game.getPlayersJSON(),
                 gameId
               });
             }
           } else {
-            //Se não há mais jogadores, remover o jogo
+            // Se não há mais jogadores, remover o jogo
             this.activeGames.delete(gameId);
           }
         }
         
-        //Remover o mapeamento de socket para jogo
+        // Remover o mapeamento de socket para jogo
         this.socketToGameMap.delete(socket.id);
       }
     } catch (error) {
